@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://smart-class-notes.vercel.app/sitemap-index.xml
