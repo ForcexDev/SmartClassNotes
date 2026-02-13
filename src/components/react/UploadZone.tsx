@@ -6,7 +6,11 @@ import { t } from '../../lib/i18n';
 
 import AudioRecorder from './AudioRecorder';
 
-const ACCEPTED = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/webm', 'audio/x-m4a', 'video/mp4', 'video/quicktime', 'video/webm'];
+const ACCEPTED = [
+    'audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/flac',
+    'audio/webm', 'audio/x-m4a', 'audio/m4a', 'audio/aac', 'audio/x-aac',
+    'video/mp4', 'video/quicktime', 'video/webm'
+];
 const MAX_SIZE = 200 * 1024 * 1024; // 200MB
 
 export default function UploadZone() {
@@ -16,8 +20,13 @@ export default function UploadZone() {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const validate = useCallback((f: File): boolean => {
-        if (!ACCEPTED.includes(f.type) && !f.name.match(/\.(mp3|m4a|wav|ogg|flac|webm|mp4|mov)$/i)) {
-            setError(locale === 'es' ? 'Formato no soportado. Usa MP3, M4A, WAV, MP4, MOV.' : 'Unsupported format. Use MP3, M4A, WAV, MP4, MOV.');
+        const isSupportedType = f.type && ACCEPTED.includes(f.type);
+        const isSupportedExtension = f.name.match(/\.(mp3|m4a|wav|ogg|flac|webm|mp4|mov|aac)$/i);
+
+        if (!isSupportedType && !isSupportedExtension) {
+            setError(locale === 'es'
+                ? 'Formato no soportado. Usa MP3, M4A, WAV, MP4 o MOV.'
+                : 'Unsupported format. Use MP3, M4A, WAV, MP4 or MOV.');
             return false;
         }
         if (f.size > MAX_SIZE) {
@@ -92,7 +101,7 @@ export default function UploadZone() {
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".mp3,.m4a,.wav,.ogg,.flac,.webm,.mp4,.mov"
+                    accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.flac,.webm,.mp4,.mov"
                     className="hidden"
                     onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
