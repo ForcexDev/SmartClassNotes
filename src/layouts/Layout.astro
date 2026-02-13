@@ -43,10 +43,7 @@ const {
           }
         });
         
-        // Update toggle text manually if needed (or use data-i18n on buttons too?)
-        // The buttons just say EN/ES, so manual update is fine.
-        const toggle = document.getElementById('lang-toggle-footer');
-        if (toggle) toggle.textContent = lang === 'es' ? 'EN' : 'ES';
+        // Update nav toggle text (Astro)
         const navToggle = document.getElementById('lang-toggle-nav');
         if (navToggle) navToggle.textContent = lang === 'es' ? 'EN' : 'ES';
       }
@@ -56,6 +53,10 @@ const {
         const next = current === 'es' ? 'en' : 'es';
         localStorage.setItem('scn-lang', next);
         applyLang(next);
+        
+        // If we are on the app page, we might need to notify React.
+        // But React usually reads from localStorage on its own or we can dispatch an event.
+        window.dispatchEvent(new CustomEvent('scn-lang-change', { detail: next }));
       }
 
       // Initialize
@@ -75,8 +76,10 @@ const {
         }
       });
       
-      // Make accessible for debugging
+      // Make accessible for React/App
+      window.applyLang = applyLang;
       window.toggleLang = toggleLang;
+      window.getLang = getLang;
     </script>
   </body>
 </html>

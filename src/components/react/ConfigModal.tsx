@@ -69,7 +69,7 @@ export default function ConfigModal() {
                     {/* Provider Toggle */}
                     <div>
                         <label className="text-xs font-medium mb-2 block" style={{ color: 'var(--text-secondary)' }}>
-                            {locale === 'es' ? 'Proveedor de IA' : 'AI Provider'}
+                            {t('app.config.provider', locale)}
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
@@ -125,7 +125,7 @@ export default function ConfigModal() {
                                 </button>
                             </div>
                             <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs mt-2 no-underline transition-colors" style={{ color: 'var(--accent)' }}>
-                                {locale === 'es' ? 'Obtener API Key de Groq' : 'Get Groq API Key'}
+                                {t('app.config.groq.get', locale)}
                                 <ExternalLink size={11} />
                             </a>
                         </div>
@@ -156,7 +156,7 @@ export default function ConfigModal() {
                                 </button>
                             </div>
                             <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs mt-2 no-underline transition-colors" style={{ color: 'var(--accent)' }}>
-                                {locale === 'es' ? 'Obtener API Key de Gemini' : 'Get Gemini API Key'}
+                                {t('app.config.gemini.get', locale)}
                                 <ExternalLink size={11} />
                             </a>
                         </div>
@@ -184,7 +184,7 @@ export default function ConfigModal() {
                                         color: pdfStyle === style ? 'var(--accent)' : 'var(--text-muted)',
                                     }}
                                 >
-                                    {style}
+                                    {t(`app.style.${style}` as any, locale)}
                                 </button>
                             ))}
                         </div>

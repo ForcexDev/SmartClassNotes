@@ -10,7 +10,8 @@ export default function AIProcessing() {
     const {
         transcription, apiKey, geminiKey, provider,
         aiStep, setAiStep,
-        setOrganizedNotes, setStep, setError, locale
+        setOrganizedNotes, setStep, setError, locale,
+        setTitle // Import setTitle
     } = useAppStore();
     const started = useRef(false);
 
@@ -32,7 +33,19 @@ export default function AIProcessing() {
 
         organize(transcription, activeKey, (step) => setAiStep(step))
             .then((notes) => {
-                setOrganizedNotes(notes);
+                // Extract Title
+                let cleanNotes = notes;
+                const titleMatch = notes.match(/^## Título\s*\n(.+)/m);
+                if (titleMatch) {
+                    const extractedTitle = titleMatch[1].trim().replace(/\*\*/g, ''); // Remove bold if present
+                    setTitle(extractedTitle);
+
+                    // Remove the Title section from markdown to avoid duplication
+                    // Remove "## Título" and the following line (the title itself) and potential empty lines
+                    cleanNotes = notes.replace(/^## Título\s*\n.+\n*/m, '').trim();
+                }
+
+                setOrganizedNotes(cleanNotes);
                 setAiStep(steps.length - 1);
                 setTimeout(() => setStep('editor'), 600);
             })

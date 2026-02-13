@@ -35,18 +35,49 @@ export default function AppMain() {
         }
     }, [error, setError]);
 
-    // Browser navigation (History API)
+    // Browser navigation (History API) & Guards
     useEffect(() => {
-        // Initial state
-        if (!history.state) {
+        // Guard 1: Redirect to upload if no data but trying to access processing/editor
+        // Guard 2: Redirect to editor if we have data but are in upload
+
+        const currentStep = useAppStore.getState().step;
+        const hasData = !!useAppStore.getState().editedNotes;
+        const hasTrans = !!useAppStore.getState().transcription;
+
+        // Initial check on load
+        if (hasData && currentStep === 'upload') {
+            // User has data but is at upload? Maybe they want to see their work.
+            useAppStore.setState({ step: 'editor' });
+            history.replaceState({ step: 'editor' }, '', '#editor');
+        } else if (!hasData && !hasTrans && (currentStep === 'ai-processing' || currentStep === 'editor' || currentStep === 'transcribing')) {
+            // Invalid state (reload on processing step without data)
+            useAppStore.setState({ step: 'upload' });
             history.replaceState({ step: 'upload' }, '', '#upload');
+        } else if (!history.state) {
+            history.replaceState({ step: currentStep }, '', `#${currentStep}`);
         }
 
         const handlePopState = (e: PopStateEvent) => {
             const s = e.state?.step;
+            const currentStoreStep = useAppStore.getState().step;
+            const storeHasData = !!useAppStore.getState().editedNotes;
+
             if (s) {
-                // If we are going back to upload, reset file to avoid stuck state? 
-                // No, keeps state. Just change view.
+                // Guard: If we have generated notes, block going back to 'transcribing' or 'ai-processing'
+                if (storeHasData && (s === 'transcribing' || s === 'ai-processing')) {
+                    // Force stay on editor
+                    history.pushState({ step: 'editor' }, '', '#editor');
+                    useAppStore.setState({ step: 'editor' });
+                    return;
+                }
+
+                // Guard: If we are going to editor but have no notes?
+                if (s === 'editor' && !storeHasData) {
+                    history.replaceState({ step: 'upload' }, '', '#upload');
+                    useAppStore.setState({ step: 'upload' });
+                    return;
+                }
+
                 useAppStore.setState({ step: s });
             } else {
                 // Default to upload if no state
@@ -74,11 +105,28 @@ export default function AppMain() {
         }
     }, [step]);
 
+    // Sync with external language changes (from Navbar.astro if present on same page, or just for consistency)
+    useEffect(() => {
+        const handleLangChange = (e: any) => {
+            if (e.detail && (e.detail === 'es' || e.detail === 'en')) {
+                setLocale(e.detail);
+            }
+        };
+        window.addEventListener('scn-lang-change' as any, handleLangChange);
+        return () => window.removeEventListener('scn-lang-change' as any, handleLangChange);
+    }, [setLocale]);
+
     const toggleLocale = () => {
         const next = locale === 'es' ? 'en' : 'es';
         setLocale(next);
-        // Also sync with Astro pages
-        if (typeof window !== 'undefined') localStorage.setItem('scn-lang', next);
+
+        // Sync with Astro components (like the Footer)
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('scn-lang', next);
+            if ((window as any).applyLang) {
+                (window as any).applyLang(next);
+            }
+        }
     };
 
     return (

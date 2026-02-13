@@ -154,6 +154,9 @@ export async function organizeNotesWithGemini(
 
 FORMATO DE SALIDA (Markdown):
 
+## Título
+[Título breve y descriptivo del tema principal]
+
 ## Resumen
 - [Punto 1: máximo 2 líneas]
 - [Punto 2: máximo 2 líneas]

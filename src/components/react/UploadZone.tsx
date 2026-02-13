@@ -4,17 +4,20 @@ import { Upload, Mic, FileAudio, ArrowRight, Info, Zap, BrainCircuit } from 'luc
 import { useAppStore } from '../../lib/store';
 import { t } from '../../lib/i18n';
 
-const ACCEPTED = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/webm', 'audio/x-m4a', 'video/mp4'];
-const MAX_SIZE = 200 * 1024 * 1024; // 200MB — compression + chunking handles the rest
+import AudioRecorder from './AudioRecorder';
+
+const ACCEPTED = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/flac', 'audio/webm', 'audio/x-m4a', 'video/mp4', 'video/quicktime', 'video/webm'];
+const MAX_SIZE = 200 * 1024 * 1024; // 200MB
 
 export default function UploadZone() {
     const { setFile, setStep, setError, apiKey, geminiKey, provider, setConfigOpen, locale, file } = useAppStore();
     const [isDragging, setIsDragging] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const validate = useCallback((f: File): boolean => {
-        if (!ACCEPTED.includes(f.type) && !f.name.match(/\.(mp3|m4a|wav|ogg|flac|webm|mp4)$/i)) {
-            setError(locale === 'es' ? 'Formato no soportado. Usa MP3, M4A, WAV, OGG o FLAC.' : 'Unsupported format. Use MP3, M4A, WAV, OGG or FLAC.');
+        if (!ACCEPTED.includes(f.type) && !f.name.match(/\.(mp3|m4a|wav|ogg|flac|webm|mp4|mov)$/i)) {
+            setError(locale === 'es' ? 'Formato no soportado. Usa MP3, M4A, WAV, MP4, MOV.' : 'Unsupported format. Use MP3, M4A, WAV, MP4, MOV.');
             return false;
         }
         if (f.size > MAX_SIZE) {
@@ -45,7 +48,23 @@ export default function UploadZone() {
         if (file) setStep('transcribing');
     };
 
+    const handleRecordingComplete = (f: File) => {
+        setIsRecording(false);
+        handleFile(f);
+    };
+
     const formatSize = (b: number) => b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / (1024 * 1024)).toFixed(1)} MB`;
+
+    if (isRecording) {
+        return (
+            <div className="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-secondary)] overflow-hidden">
+                <AudioRecorder
+                    onRecordingComplete={handleRecordingComplete}
+                    onCancel={() => setIsRecording(false)}
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -54,9 +73,7 @@ export default function UploadZone() {
                     {t('app.upload.title', locale)}
                 </h1>
                 <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    {locale === 'es'
-                        ? 'Soporta Whisper V3 (Groq) y Gemini Flash 2.0 para todo tipo de audios.'
-                        : 'Supports Whisper V3 (Groq) and Gemini Flash 2.0 for all audio types.'}
+                    {t('app.upload.subtitle', locale)}
                 </p>
             </div>
 
@@ -66,7 +83,7 @@ export default function UploadZone() {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => !file && inputRef.current?.click()}
-                className="relative rounded-xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-200"
+                className="relative rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-all duration-200 group"
                 style={{
                     background: isDragging ? 'var(--accent-subtle)' : 'var(--bg-secondary)',
                     border: `1px ${isDragging ? 'solid' : 'dashed'} ${isDragging ? 'var(--accent)' : 'var(--border-default)'}`,
@@ -75,31 +92,39 @@ export default function UploadZone() {
                 <input
                     ref={inputRef}
                     type="file"
-                    accept=".mp3,.m4a,.wav,.ogg,.flac,.webm,.mp4"
+                    accept=".mp3,.m4a,.wav,.ogg,.flac,.webm,.mp4,.mov"
                     className="hidden"
                     onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
 
                 {!file ? (
-                    <div className="space-y-4">
-                        <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center" style={{ background: 'var(--accent-subtle)' }}>
-                            {isDragging ? <Upload size={20} style={{ color: 'var(--accent)' }} /> : <Mic size={20} style={{ color: 'var(--accent)' }} />}
+                    <div className="space-y-6">
+                        <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-4 transition-colors group-hover:bg-[var(--bg-tertiary)]" style={{ background: 'var(--accent-subtle)' }}>
+                            <Upload size={20} style={{ color: 'var(--accent)' }} />
                         </div>
                         <div>
-                            <p className="text-sm font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
+                            <p className="text-base font-medium mb-1" style={{ color: 'var(--text-primary)' }}>
                                 {isDragging ? t('app.upload.dropping', locale) : t('app.upload.drop', locale)}
                             </p>
                             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
                                 {t('app.upload.formats', locale)}
                             </p>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
-                            className="text-xs font-medium px-4 py-2 rounded-lg transition-colors"
-                            style={{ background: 'var(--bg-tertiary)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }}
-                        >
-                            {t('app.upload.select', locale)}
-                        </button>
+                        <div className="flex items-center justify-center gap-3">
+                            <button
+                                onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+                                className="btn-filled text-xs px-5 py-2.5 rounded-lg"
+                            >
+                                {t('app.upload.select', locale)}
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); setIsRecording(true); }}
+                                className="btn-ghost text-xs px-5 py-2.5 rounded-lg flex items-center gap-2"
+                            >
+                                <Mic size={14} />
+                                {t('app.record.start', locale)}
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     <div className="flex items-center gap-4 text-left" onClick={(e) => e.stopPropagation()}>
