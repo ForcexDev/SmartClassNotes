@@ -18,7 +18,11 @@ A professional-grade, privacy-first web application that transforms audio record
 
 Try the application immediately: **[smart-class-notes.vercel.app](https://smart-class-notes.vercel.app/)**
 
-The web application runs entirely in your browser. Simply enter your free **Groq** or **Google Gemini** API key to start processing lectures, meetings, and voice notes instantly.
+The web application runs entirely in your browser using **client-side processing** (your audio and keys never touch a backend server).
+
+**Security Note**:
+- The web version is fully secure and safe to use with your API Keys.
+- However, if you prefer maximum isolation or strict corporate compliance, you can run the application locally (`localhost`) using the installation steps below.
 
 ---
 
@@ -60,16 +64,16 @@ Real-world processing performance for a 1-hour lecture (~50MB audio):
 
 ```mermaid
 graph TD
-    User[User Browser]
+    User["User Browser"]
     subgraph "Client Side (Your Device)"
-        Upload[Audio File]
-        Store[LocalStorage (Keys)]
-        App[Smart Class Notes App]
+        Upload["Audio File"]
+        Store["LocalStorage (Keys)"]
+        App["Smart Class Notes App"]
     end
     
     subgraph "External AI APIs"
-        Groq[Groq API (Whisper/Llama)]
-        Gemini[Google API (Gemini Flash)]
+        Groq["Groq API (Whisper/Llama)"]
+        Gemini["Google API (Gemini Flash)"]
     end
 
     User --> Upload
@@ -82,7 +86,7 @@ graph TD
     Groq -- "Transcription & Notes" --> App
     Gemini -- "Transcription & Notes" --> App
     
-    App --> Result[Formatted PDF/Notes]
+    App --> Result["Formatted PDF/Notes"]
 ```
 
 ---
@@ -143,9 +147,11 @@ Enter them in the application settings (gear icon).
 - Ensure your key has no extra spaces.
 - Verify you have selected the correct provider matching your key.
 
-### "Rate Limit Exceeded"
-- Groq has strict per-minute limits on the free tier. If you hit strict limits, switch to Gemini or wait a minute.
-- The app handles backoff automatically, but heavy usage may trigger temporary blocks.
+### "Rate Limit Exceeded" / "Resource Exhausted"
+- **Groq**: Free tier has strict per-minute limits. If you hit them, wait a minute or switch provider.
+- **Gemini**: If you see "Limit 0" or 429 immediately, you likely need to link a **Billing Account** (credit card) in [Google AI Studio](https://aistudio.google.com/app/plan).
+  - **Important**: The "Pay-as-you-go" plan often includes a massive **Free Tier** (or effectively **Unlimited** for Gemini Flash, as confirmed in testing) but requires identity verification.
+  - Without billing, you are on a restricted "Free of Charge" tier which may be lower.
 
 ---
 
