@@ -16,7 +16,7 @@ Elevate your notes using advanced AI models and BYOK security. A privacy-first a
 
 ## 🌐 Live Demo
 
-Try the application immediately: **[smart-class-notes.vercel.app](https://smart-class-notes.vercel.app/)**
+Try the application immediately: **[compendium-notes.vercel.app](https://compendium-notes.vercel.app/)**
 
 The web application runs entirely in your browser using **client-side processing** (your audio and keys never touch a backend server).
 
@@ -32,7 +32,7 @@ The web application runs entirely in your browser using **client-side processing
 - **Dual AI Engine** - Choose between **Groq** (Extreme Speed) and **Gemini** (Massive Context).
 - **Audio Recorder** - Built-in recording functionality directly from your browser.
 - **Privacy-First Architecture** - Keys and data stored exclusively in `localStorage`. Direct Browser-to-API communication.
-- **Smart Transcription** - Uses **Whisper v3 Turbo** (via Groq) or **Gemini Flash 2.0** for lightning-fast audio-to-text.
+- **Intelligent Transcription** - Uses **Whisper v3 Turbo** (via Groq) or **Gemini Flash 2.0** for lightning-fast audio-to-text.
 - **AI-Powered Organization** - Automatically extracts summaries, concepts, and structured notes using **Llama 4 Scout** or **Gemini**.
 - **Dark & Light Mode** - Full support for both themes with automatic system preference detection.
 - **Premium PDF Styles** - Export in **Minimalist**, **Academic**, or **Cornell** styles.
@@ -104,8 +104,8 @@ graph TD
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/ForcexDev/SmartClassNotes.git
-   cd SmartClassNotes
+   git clone https://github.com/ForcexDev/compendium-notes.git
+   cd compendium-notes
    ```
 
 2. Install dependencies:

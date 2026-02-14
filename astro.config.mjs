@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://smart-class-notes.vercel.app',
+  site: 'https://compendium-notes.vercel.app',
   integrations: [
     react(),
     tailwind(),

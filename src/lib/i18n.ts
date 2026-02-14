@@ -27,7 +27,7 @@ export const translations = {
         es: 'Elige entre la velocidad extrema de Whisper + Llama (Groq) o el razonamiento multimodal de Gemini Flash 2.0.',
         en: 'Choose between Whisper + Llama extreme speed (Groq) or Gemini Flash 2.0 multimodal reasoning.',
     },
-    'features.organize.title': { es: 'Organización Inteligente', en: 'Smart Organization' },
+    'features.organize.title': { es: 'Organización Inteligente', en: 'Intelligent Organization' },
     'features.organize.desc': {
         es: 'Detecta temas automáticamente, extrae conceptos clave y genera resúmenes estructurados perfectos.',
         en: 'Automatically detects topics, extracts key concepts, and generates structured perfect summaries.',

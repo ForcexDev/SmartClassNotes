@@ -42,7 +42,7 @@ interface AppState {
     // AI Processing
     aiStep: number;
     setAiStep: (step: number) => void;
-    title: string; // Smart Title
+    title: string; // Intelligent Title
     setTitle: (title: string) => void;
     organizedNotes: string;
     setOrganizedNotes: (notes: string) => void;
