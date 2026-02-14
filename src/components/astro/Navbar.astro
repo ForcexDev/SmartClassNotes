@@ -1,6 +1,6 @@
 ---
 ---
-<nav class="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/80 backdrop-blur-lg">
+<nav class="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[rgba(var(--bg-primary-rgb),0.8)] backdrop-blur-lg">
   <div class="container-page flex items-center justify-between h-14">
     <a href="/" class="flex items-center gap-2.5 no-underline">
       <div class="w-7 h-7 rounded-md bg-[var(--accent)] flex items-center justify-center text-white font-semibold text-xs">S</div>
@@ -10,7 +10,25 @@
     <div class="flex items-center gap-1">
       <a href="/#features" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-3 py-1.5 no-underline hidden sm:block" data-i18n="footer.features">Características</a>
       <a href="/#pricing" class="text-sm text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-3 py-1.5 no-underline hidden sm:block" data-i18n="footer.pricing">Precios</a>
-      <button id="lang-toggle-nav" class="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2.5 py-1.5 border border-[var(--border-subtle)] rounded-md ml-2">EN</button>
+      <button id="theme-toggle" class="text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors p-1.5 border border-[var(--border-subtle)] rounded-md ml-2" aria-label="Toggle Theme">
+        <!-- Sun (Show in Light) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block dark:hidden">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41-1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+        </svg>
+        <!-- Moon (Show in Dark) -->
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hidden dark:block">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </button>
+      <button id="lang-toggle-nav" class="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] transition-colors px-2.5 py-1.5 border border-[var(--border-subtle)] rounded-md ml-2">ES</button>
       <a href="/app" class="btn-filled text-xs px-4 py-1.5 ml-2" data-i18n="nav.app">Abrir App</a>
     </div>
   </div>

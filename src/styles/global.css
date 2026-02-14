@@ -7,7 +7,42 @@
 
 /* ===== DESIGN TOKENS ===== */
 :root {
+    /* Light Mode (Default) */
+    --bg-primary: #ffffff;
+    --bg-primary-rgb: 255, 255, 255;
+    --bg-secondary: #f4f4f5;
+    /* zinc-100 */
+    --bg-tertiary: #e4e4e7;
+    /* zinc-200 */
+    --bg-elevated: #ffffff;
+
+    --border-subtle: rgba(0, 0, 0, 0.08);
+    /* Ligeramente más visible */
+    --border-default: rgba(0, 0, 0, 0.12);
+    --border-hover: rgba(0, 0, 0, 0.18);
+
+    --text-primary: #18181b;
+    /* zinc-900 */
+    --text-secondary: #52525b;
+    /* zinc-600 */
+    --text-muted: #71717a;
+    /* zinc-500 */
+
+    --accent: #7c3aed;
+    /* violet-600 */
+    --accent-hover: #6d28d9;
+    /* violet-700 */
+    --accent-subtle: rgba(124, 58, 237, 0.1);
+    --accent-glow: rgba(124, 58, 237, 0.15);
+
+    --grid-line: rgba(124, 58, 237, 0.16);
+    /* Más visible en modo claro */
+}
+
+.dark {
+    /* Dark Mode */
     --bg-primary: #09090b;
+    --bg-primary-rgb: 9, 9, 11;
     --bg-secondary: #0f0f12;
     --bg-tertiary: #18181b;
     --bg-elevated: #1c1c20;
@@ -24,7 +59,11 @@
     --accent-hover: #a78bfa;
     --accent-subtle: rgba(139, 92, 246, 0.1);
     --accent-glow: rgba(139, 92, 246, 0.15);
+
+    --grid-line: rgba(255, 255, 255, 0.05);
 }
+
+/* ===== BASE ===== */
 
 /* ===== BASE ===== */
 * {
@@ -200,8 +239,8 @@ body {
     /* ===== GRID BACKGROUND ===== */
     .grid-bg {
         background-image:
-            linear-gradient(var(--border-subtle) 1px, transparent 1px),
-            linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+            linear-gradient(var(--grid-line) 1px, transparent 1px),
+            linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
         background-size: 80px 80px;
     }
 

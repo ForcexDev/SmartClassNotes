@@ -6,7 +6,7 @@ import { t } from '../../lib/i18n';
 import { generatePdf } from '../../lib/pdf-generator';
 
 export default function NotesEditor() {
-    const { editedNotes, setEditedNotes, file, reset, locale, transcription, pdfStyle, setPdfStyle, title } = useAppStore();
+    const { editedNotes, setEditedNotes, file, reset, locale, transcription, pdfStyle, setPdfStyle, title, theme } = useAppStore();
     const [copied, setCopied] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [downloaded, setDownloaded] = useState(false);
@@ -14,17 +14,13 @@ export default function NotesEditor() {
     const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
     const [showTranscript, setShowTranscript] = useState(false);
 
-    // Derived title logic: Store Title > Extracted from Content > First Header > Filename
+    // Derived title logic
     const derivedTitle = useMemo(() => {
         if (title) return title;
 
-        // Try to extract from editedNotes using specific "Título" section
-        // Matches: ## Título (newlines) The Title
         const explicitMatch = editedNotes.match(/^## T[íi]tulo\s*\n+([^\n]+)/m);
         if (explicitMatch) return explicitMatch[1].trim().replace(/\*\*/g, '');
 
-        // Fallback: Check if the very first line is a Header (# or ##) that isn't a reserved section
-        // Reserved sections: Resumen, Conceptos, Definiciones, Contenido
         const firstLineMatch = editedNotes.match(/^\s*#{1,2}\s+([^\n]+)/);
         if (firstLineMatch) {
             const candidate = firstLineMatch[1].trim();
@@ -48,18 +44,13 @@ export default function NotesEditor() {
         setTimeout(() => {
             let finalContent = showTranscript ? transcription : editedNotes;
 
-            // Clean content if title was extracted from it
             if (!title && !showTranscript) {
-                // Logic to remove the title from the body if we just extracted it
-                // 1. Try explicit remove
                 let cleaned = finalContent.replace(/^## T[íi]tulo\s*\n+[^\n]+\n*/m, '');
 
-                // 2. If no change (maybe we used the fallback first header), check if we matched the first line
                 if (cleaned === finalContent) {
                     const firstLineMatch = finalContent.match(/^\s*#{1,2}\s+([^\n]+)/);
                     if (firstLineMatch) {
                         const candidate = firstLineMatch[1].trim();
-                        // If this candidate matches our derivedTitle, remove it
                         if (candidate.replace(/\*\*/g, '') === derivedTitle) {
                             cleaned = finalContent.replace(/^\s*#{1,2}\s+[^\n]+\n*/, '');
                         }
@@ -81,30 +72,139 @@ export default function NotesEditor() {
         }, 300);
     };
 
-    const previewHtml = useMemo(() => {
-        // Base styles
-        let font = 'ui-sans-serif, system-ui, sans-serif';
-        let titleColor = 'var(--text-primary)';
-        let headersColor = 'var(--text-primary)';
-        let borderColor = 'var(--border-subtle)';
+    // Estilos de preview mejorados - escala aumentada para mejor legibilidad
+    const previewStyles = useMemo(() => {
+        const isDark = theme === 'dark';
 
         if (pdfStyle === 'academico') {
-            font = '"Times New Roman", Times, serif';
-            titleColor = '#003366'; // Classic Blue
-            headersColor = '#003366';
-        } else if (pdfStyle === 'minimalista') {
-            font = 'Helvetica, Arial, sans-serif';
-            titleColor = '#000000'; // Black (Darker)
-            headersColor = '#111';
+            return {
+                font: '"Georgia", "Times New Roman", serif',
+                titleSize: '2.2rem',
+                titleWeight: '700',
+                titleColor: isDark ? '#cbd5e1' : 'rgb(0, 51, 102)',
+                titleLineHeight: '1.3',
+                titleMargin: '0 0 0.75rem 0',
+
+                h1Size: '1.5rem',
+                h1Weight: '700',
+                h1Margin: '2.5rem 0 1rem 0',
+
+                h2Size: '1.25rem',
+                h2Weight: '700',
+                h2Margin: '2rem 0 0.75rem 0',
+                h2Border: isDark ? '1px solid rgba(203, 213, 225, 0.3)' : '1px solid rgb(0, 51, 102)',
+                h2Padding: '0 0 0.5rem 0',
+
+                h3Size: '1.1rem',
+                h3Weight: '700',
+                h3Margin: '1.5rem 0 0.6rem 0',
+
+                bodySize: '1rem',
+                bodyColor: isDark ? 'rgba(248, 250, 252, 0.85)' : 'rgb(50, 50, 50)',
+                bodyMargin: '0 0 1rem 0',
+                bodyLineHeight: '1.65',
+
+                listMargin: '0.5rem 0',
+
+                metaColor: isDark ? 'rgba(203, 213, 225, 0.6)' : 'rgb(130, 130, 130)',
+                metaSize: '0.875rem',
+
+                separatorColor: isDark ? 'rgba(203, 213, 225, 0.3)' : 'rgb(0, 51, 102)',
+                separatorWidth: '0.6px',
+                separatorMargin: '1rem 0',
+
+                bg: isDark ? 'var(--bg-elevated)' : '#fff',
+            };
+        } else if (pdfStyle === 'cornell') {
+            return {
+                font: '"Outfit", sans-serif',
+                titleSize: '2.5rem',
+                titleWeight: '700',
+                titleColor: isDark ? '#fafafa' : 'rgb(17, 24, 39)',
+                titleLineHeight: '1.25',
+                titleMargin: '0 0 0.75rem 0',
+
+                h1Size: '1.75rem',
+                h1Weight: '700',
+                h1Margin: '2.5rem 0 1rem 0',
+
+                h2Size: '1rem',
+                h2Weight: '700',
+                h2Margin: '1.25rem 0 0.75rem 0',
+                h2Border: 'none',
+                h2Padding: '0',
+
+                h3Size: '0.95rem',
+                h3Weight: '700',
+                h3Margin: '1rem 0 0.6rem 0',
+                h3Color: isDark ? 'rgba(250, 250, 250, 0.8)' : 'rgb(55, 65, 81)',
+
+                bodySize: '0.95rem',
+                bodyColor: isDark ? 'rgba(248, 250, 252, 0.85)' : 'rgb(50, 50, 50)',
+                bodyMargin: '0 0 1rem 0',
+                bodyLineHeight: '1.6',
+
+                listMargin: '0.5rem 0',
+
+                metaColor: isDark ? 'rgba(203, 213, 225, 0.6)' : 'rgb(107, 114, 128)',
+                metaSize: '0.875rem',
+
+                headerBg: isDark ? 'rgba(55, 65, 81, 0.3)' : 'rgb(249, 250, 251)',
+                headerPadding: '2rem',
+
+                columnDivider: isDark ? 'rgba(209, 213, 219, 0.2)' : 'rgb(209, 213, 219)',
+                columnWidth: '30%',
+
+                bg: isDark ? 'var(--bg-elevated)' : '#fff',
+            };
+        } else { // minimalista
+            return {
+                font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+                titleSize: '2.25rem',
+                titleWeight: '700',
+                titleColor: isDark ? '#fafafa' : '#000000',
+                titleLineHeight: '1.3',
+                titleMargin: '0 0 0.75rem 0',
+
+                h1Size: '1.75rem',
+                h1Weight: '700',
+                h1Margin: '2.5rem 0 1rem 0',
+
+                h2Size: '1.3rem',
+                h2Weight: '700',
+                h2Margin: '2rem 0 0.75rem 0',
+                h2Border: 'none',
+                h2Padding: '0',
+
+                h3Size: '1.1rem',
+                h3Weight: '700',
+                h3Margin: '1.5rem 0 0.6rem 0',
+
+                bodySize: '1rem',
+                bodyColor: isDark ? 'rgba(248, 250, 252, 0.85)' : 'rgb(50, 50, 50)',
+                bodyMargin: '0 0 1rem 0',
+                bodyLineHeight: '1.6',
+
+                listMargin: '0.5rem 0',
+
+                metaColor: isDark ? 'rgba(203, 213, 225, 0.6)' : 'rgb(140, 140, 140)',
+                metaSize: '0.875rem',
+
+                separatorColor: isDark ? 'rgba(200, 200, 200, 0.2)' : 'rgb(200, 200, 200)',
+                separatorWidth: '0.4px',
+                separatorMargin: '1rem 0',
+
+                bg: isDark ? 'var(--bg-elevated)' : '#fff',
+            };
         }
+    }, [pdfStyle, theme]);
 
-        // Apply style to container via wrapper in render, but here we format HTML
-        // tailored slightly to the vibe.
+    const previewHtml = useMemo(() => {
+        const styles = previewStyles;
 
-        // Remove Title section from preview body if we are showing it as Main Title
+        // Remover título del contenido
         let contentToRender = editedNotes.replace(/^## T[íi]tulo\s*\n+[^\n]+\n*/m, '').trim();
 
-        // Also remove first line if it matches derivedTitle (fallback case)
         if (contentToRender === editedNotes.trim()) {
             const firstLineMatch = editedNotes.match(/^\s*#{1,2}\s+([^\n]+)/);
             if (firstLineMatch && firstLineMatch[1].trim().replace(/\*\*/g, '') === derivedTitle) {
@@ -112,24 +212,115 @@ export default function NotesEditor() {
             }
         }
 
-        let html = contentToRender
-            .replace(/^### (.+)$/gm, `<h3 style="font-family:${font};font-size:1rem;font-weight:600;margin:1.25rem 0 0.5rem;color:${headersColor};">$1</h3>`)
-            .replace(/^## (.+)$/gm, `<h2 style="font-family:${font};font-size:1.15rem;font-weight:600;margin:1.5rem 0 0.5rem;color:${titleColor};border-bottom:${pdfStyle === 'academico' ? '1px solid #003366' : 'none'};padding-bottom:4px;">$1</h2>`)
-            .replace(/^# (.+)$/gm, `<h1 style="font-family:${font};font-size:1.3rem;font-weight:700;margin:1.75rem 0 0.5rem;color:${titleColor};">$1</h1>`)
-            .replace(/\*\*(.+?)\*\*/g, `<strong style="color:var(--text-primary);font-weight:600;">$1</strong>`)
-            .replace(/\*(.+?)\*/g, '<em>$1</em>')
-            .replace(/^- (.+)$/gm, '<li style="margin:0.25rem 0;padding-left:0.25rem;">$1</li>')
-            .replace(/(<li.*<\/li>\n?)+/g, '<ul style="list-style:disc;padding-left:1.25rem;margin:0.5rem 0;">$&</ul>')
-            .replace(/\n\n/g, '<br/><br/>')
-            .replace(/\n/g, '<br/>');
+        const lines = contentToRender.split('\n');
+        let processedHtml = '';
+        let listBuffer: string[] = [];
+        let isCornellCue = false;
 
-        // Add Title logic
-        if (!editedNotes.startsWith('# ')) {
-            html = `<h1 style="font-family:${font};font-size:1.5rem;font-weight:bold;margin-bottom:1rem;color:${titleColor};">${derivedTitle}</h1>` + html;
+        const flushList = () => {
+            if (listBuffer.length > 0) {
+                const listStyle = pdfStyle === 'cornell' && !isCornellCue ?
+                    `margin-left: ${styles.columnWidth}; padding-left: 1.5rem;` :
+                    'padding-left: 1.5rem;';
+                processedHtml += `<ul style="list-style:disc;${listStyle}margin:0.5rem 0;">${listBuffer.join('')}</ul>`;
+                listBuffer = [];
+            }
+        };
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) {
+                flushList();
+                continue;
+            }
+
+            // Headers
+            if (line.startsWith('### ')) {
+                flushList();
+                const text = line.replace('### ', '').replace(/\*\*/g, '');
+                const h3Color = pdfStyle === 'cornell' ? (styles.h3Color || styles.titleColor) : styles.titleColor;
+
+                if (pdfStyle === 'cornell') {
+                    processedHtml += `<h3 style="font-family:${styles.font};font-size:${styles.h3Size};font-weight:${styles.h3Weight};margin:${styles.h3Margin};color:${h3Color};width:${styles.columnWidth};float:left;clear:left;padding-right:1rem;">${text}</h3>`;
+                    isCornellCue = true;
+                } else {
+                    processedHtml += `<h3 style="font-family:${styles.font};font-size:${styles.h3Size};font-weight:${styles.h3Weight};margin:${styles.h3Margin};color:${h3Color};">${text}</h3>`;
+                }
+            } else if (line.startsWith('## ')) {
+                flushList();
+                const text = line.replace('## ', '').replace(/\*\*/g, '');
+
+                if (pdfStyle === 'cornell') {
+                    processedHtml += `<h2 style="font-family:${styles.font};font-size:${styles.h2Size};font-weight:${styles.h2Weight};margin:${styles.h2Margin};color:${styles.titleColor};width:${styles.columnWidth};float:left;clear:left;padding-right:1rem;">${text}</h2>`;
+                    isCornellCue = true;
+                } else {
+                    const borderStyle = pdfStyle === 'academico' ? `border-bottom:${styles.h2Border};padding-bottom:${styles.h2Padding};` : '';
+                    processedHtml += `<h2 style="font-family:${styles.font};font-size:${styles.h2Size};font-weight:${styles.h2Weight};margin:${styles.h2Margin};color:${styles.titleColor};${borderStyle}">${text}</h2>`;
+                }
+            } else if (line.startsWith('# ')) {
+                flushList();
+                const text = line.replace('# ', '').replace(/\*\*/g, '');
+                processedHtml += `<h1 style="font-family:${styles.font};font-size:${styles.h1Size};font-weight:${styles.h1Weight};margin:${styles.h1Margin};color:${styles.titleColor};line-height:${styles.titleLineHeight};">${text}</h1>`;
+                isCornellCue = false;
+            }
+            // Lists
+            else if (line.startsWith('- ') || line.startsWith('• ')) {
+                const itemText = line.replace(/^[-•] /, '').replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;">$1</strong>');
+                listBuffer.push(`<li style="margin:${styles.listMargin};font-size:${styles.bodySize};color:${styles.bodyColor};line-height:${styles.bodyLineHeight};">${itemText}</li>`);
+            }
+            // Paragraphs
+            else {
+                flushList();
+                const formattedLine = line
+                    .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:700;">$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+                const pStyle = pdfStyle === 'cornell' && !isCornellCue ?
+                    `margin-left: ${styles.columnWidth}; padding-left: 1.5rem;` : '';
+
+                processedHtml += `<p style="${pStyle}margin:${styles.bodyMargin};font-size:${styles.bodySize};color:${styles.bodyColor};line-height:${styles.bodyLineHeight};">${formattedLine}</p>`;
+                isCornellCue = false;
+            }
+        }
+        flushList();
+
+        // Construir HTML final con header
+        let headerHtml = '';
+
+        // Cornell: Header con fondo gris - CENTRADO
+        if (pdfStyle === 'cornell') {
+            headerHtml = `
+                <div style="background:${styles.headerBg};padding:${styles.headerPadding};margin:-2rem -2rem 2rem -2rem;border-bottom:1px solid ${styles.columnDivider};">
+                    <h1 style="font-family:${styles.font};font-size:${styles.titleSize};font-weight:${styles.titleWeight};color:${styles.titleColor};line-height:${styles.titleLineHeight};margin:${styles.titleMargin};text-align:left;">${derivedTitle}</h1>
+                    <div style="font-size:${styles.metaSize};color:${styles.metaColor};margin-top:0.5rem;">
+                        ${new Date().toLocaleDateString(locale === 'es' ? 'es-CL' : 'en-US')} • Smart Class Notes
+                    </div>
+                </div>
+            `;
+        }
+        // Académico: Título con línea debajo
+        else if (pdfStyle === 'academico') {
+            headerHtml = `
+                <h1 style="font-family:${styles.font};font-size:${styles.titleSize};font-weight:${styles.titleWeight};color:${styles.titleColor};line-height:${styles.titleLineHeight};margin:${styles.titleMargin};">${derivedTitle}</h1>
+                <div style="font-size:${styles.metaSize};color:${styles.metaColor};margin:0.5rem 0;">
+                    ${new Date().toLocaleDateString(locale === 'es' ? 'es-CL' : 'en-US')} • Smart Class Notes
+                </div>
+                <div style="border-bottom:${styles.separatorWidth} solid ${styles.separatorColor};margin:${styles.separatorMargin};"></div>
+            `;
+        }
+        // Minimalista: Título simple con línea sutil
+        else {
+            headerHtml = `
+                <h1 style="font-family:${styles.font};font-size:${styles.titleSize};font-weight:${styles.titleWeight};color:${styles.titleColor};line-height:${styles.titleLineHeight};margin:${styles.titleMargin};">${derivedTitle}</h1>
+                <div style="font-size:${styles.metaSize};color:${styles.metaColor};margin:0.5rem 0;">
+                    ${new Date().toLocaleDateString(locale === 'es' ? 'es-CL' : 'en-US')} • Smart Class Notes
+                </div>
+                <div style="border-bottom:${styles.separatorWidth} solid ${styles.separatorColor};margin:${styles.separatorMargin};"></div>
+            `;
         }
 
-        return html;
-    }, [editedNotes, pdfStyle, derivedTitle]);
+        return headerHtml + processedHtml;
+    }, [editedNotes, pdfStyle, derivedTitle, locale, previewStyles]);
 
     return (
         <div className="flex flex-col h-full rounded-xl overflow-hidden" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
@@ -213,7 +404,7 @@ export default function NotesEditor() {
                         <span className="hidden md:inline">{copied ? t('app.editor.copied', locale) : t('app.editor.copy', locale)}</span>
                     </button>
 
-                    {/* Style Selector (Custom Dropdown) */}
+                    {/* Style Selector */}
                     <div className="relative">
                         <button
                             onClick={() => setIsStyleOpen(!isStyleOpen)}
@@ -320,11 +511,14 @@ export default function NotesEditor() {
                 ) : (
                     <>
                         {/* Markdown Editor */}
-                        <div className={`flex-1 min-h-0 ${activeTab !== 'edit' ? 'hidden sm:block' : ''}`}>
+                        <div className={`flex-1 min-h-0 ${activeTab !== 'edit' ? 'hidden sm:block' : ''} transition-all duration-300 relative group`}>
+                            <div className="absolute inset-0 border-2 border-transparent pointer-events-none group-focus-within:border-[var(--accent)]/10 group-focus-within:bg-[var(--accent)]/[0.01] transition-all duration-500 rounded-lg"></div>
+                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-0 group-focus-within:opacity-100 transition-all duration-500 z-20"></div>
+
                             <textarea
                                 value={editedNotes}
                                 onChange={(e) => setEditedNotes(e.target.value)}
-                                className="w-full h-full resize-none bg-transparent p-4 sm:p-5 text-sm font-mono outline-none custom-scrollbar"
+                                className="w-full h-full resize-none bg-transparent p-4 sm:p-5 text-sm font-mono focus:outline-none custom-scrollbar relative z-10"
                                 style={{ color: 'var(--text-primary)', lineHeight: 1.7 }}
                                 spellCheck={false}
                             />
@@ -333,13 +527,22 @@ export default function NotesEditor() {
                         {/* Divider */}
                         <div className="hidden sm:block w-px" style={{ background: 'var(--border-subtle)' }}></div>
 
-                        {/* Preview */}
-                        <div className={`flex-1 min-h-0 overflow-auto custom-scrollbar p-4 sm:p-5 ${activeTab !== 'preview' ? 'hidden sm:block' : ''}`}>
+                        {/* Preview - Márgenes reducidos de p-12 a p-8 */}
+                        <div className={`flex-1 min-h-0 overflow-auto bg-[var(--bg-tertiary)] dark:bg-[var(--bg-primary)] p-4 sm:p-6 custom-scrollbar ${activeTab !== 'preview' ? 'hidden sm:block' : ''}`}>
                             <div
-                                className="text-sm leading-relaxed max-w-none"
-                                style={{ color: 'var(--text-secondary)' }}
-                                dangerouslySetInnerHTML={{ __html: previewHtml }}
-                            />
+                                className="mx-auto shadow-xl rounded-sm min-h-full max-w-[800px]"
+                                style={{
+                                    background: previewStyles.bg,
+                                    border: '1px solid var(--border-subtle)',
+                                    fontFamily: previewStyles.font,
+                                    padding: pdfStyle === 'cornell' ? '2rem' : '3rem 2.5rem'
+                                }}
+                            >
+                                <div
+                                    className="text-sm leading-relaxed max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: previewHtml }}
+                                />
+                            </div>
                         </div>
                     </>
                 )}

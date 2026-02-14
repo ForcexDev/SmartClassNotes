@@ -75,8 +75,19 @@ interface AppState {
     startProcessing: (file: File) => void;
     cancelProcessing: () => void;
 
+    // Theme
+    theme: 'light' | 'dark';
+    toggleTheme: () => void;
+
     // Reset
     reset: () => void;
+}
+
+function getInitialTheme(): 'light' | 'dark' {
+    if (typeof window === 'undefined') return 'dark';
+    const stored = localStorage.getItem('scn-theme');
+    if (stored === 'light' || stored === 'dark') return stored;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
 function getInitialLocale(): Locale {
@@ -96,6 +107,17 @@ function getInitialProvider(): Provider {
 export const useAppStore = create<AppState>()(
     persist(
         (set, get) => ({
+            theme: getInitialTheme(),
+            toggleTheme: () => {
+                const current = get().theme;
+                const next = current === 'dark' ? 'light' : 'dark';
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('scn-theme', next);
+                    document.documentElement.classList.toggle('dark', next === 'dark');
+                }
+                set({ theme: next });
+            },
+
             locale: getInitialLocale(),
             setLocale: (locale) => {
                 if (typeof window !== 'undefined') localStorage.setItem('scn-lang', locale);
@@ -181,28 +203,20 @@ export const useAppStore = create<AppState>()(
                     processingState: 'idle',
                     processingProgress: 0,
                     compressionInfo: '',
-                    // Keep keys, provider, locale, style
+                    // Keep keys, provider, locale, style, theme
                 });
             },
         }),
         {
             name: 'scn-storage', // unique name
             partialize: (state) => ({
-                // Let's persist EVERYTHING that matters for state restoration.
                 step: state.step,
                 transcription: state.transcription,
                 organizedNotes: state.organizedNotes,
                 editedNotes: state.editedNotes,
                 title: state.title,
                 pdfStyle: state.pdfStyle,
-                // Persist processing state so we can recover on refresh/navigation?
-                // For now, let's persist it to be safe, but file objects don't persist well in JSON storage.
-                // We'll rely on the GlobalProcessor being alive for SPA nav. If full reload, we lose the File object anyway.
-                // Keys/Provider/Locale are manually synced for now, let's keep it that way to avoid conflict
-                // or migrate them to persist?
-                // Manual sync is fine. Persist handles the big data.
             }),
-            // Use custom storage to merge with manual keys? No, just let it be independent.
         }
     )
 );
